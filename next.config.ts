@@ -8,6 +8,13 @@ const nextConfig: NextConfig = {
 		imageSizes: [48, 96, 160, 320],
 		formats: process.env.NODE_ENV === 'production' ? ['image/avif', 'image/webp'] : undefined,
 		loader: 'default',
+		remotePatterns: [
+			{
+				protocol: 'https',
+				hostname: 'i.scdn.co',
+				pathname: '/image/**',
+			},
+		],
 	},
 	reactStrictMode: true,
 };
