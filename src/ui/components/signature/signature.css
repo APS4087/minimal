@@ -1,22 +1,22 @@
 .signature-container {
-  width: 100%;
-  max-width: 120px;
-  margin-bottom: 16px;
+    width: 50%;
+    max-width: 50%;
+    margin-bottom: 16px;
 }
 
 .signature-svg {
-  width: 100%;
-  height: auto;
+    width: 100%;
+    height: auto;
 }
 
 .signature-path {
-  stroke-dasharray: 1000;
-  stroke-dashoffset: 1000;
-  animation: drawSignature 2.5s ease-out forwards;
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 1000;
+    animation: drawSignature 2.5s ease-out forwards;
 }
 
 @keyframes drawSignature {
-  to {
-    stroke-dashoffset: 0;
-  }
+    to {
+        stroke-dashoffset: 0;
+    }
 }

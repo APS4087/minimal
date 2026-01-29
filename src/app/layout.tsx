@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { courier } from "@/fonts/Courier";
 import "@/style/globals.scss";
-import { Lenis, Grid, GsapScrollTrigger, Menu } from "@/ui/components";
+import { LenisWrapper, Grid, GsapScrollTrigger, MenuWrapper } from "@/ui/components";
 
 export const metadata: Metadata = {
   title: "Portfolio",
@@ -18,13 +18,13 @@ export default function RootLayout({
       <body
         className={`${courier.variable} ${courier.variable} font-serif text-white antialiased bg-black`}
       >
-        <Menu />
+        <MenuWrapper />
         <main id="content" tabIndex={-1}>
           {children}
         </main>
         <Grid />
         <GsapScrollTrigger />
-        <Lenis key={`lenis${(children as React.ReactElement)?.key}`} />
+        <LenisWrapper />
       </body>
     </html>
   );

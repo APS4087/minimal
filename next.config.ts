@@ -14,6 +14,11 @@ const nextConfig: NextConfig = {
 				hostname: 'i.scdn.co',
 				pathname: '/image/**',
 			},
+			{
+				protocol: 'https',
+				hostname: 'cdn.sanity.io',
+				pathname: '/files/**',
+			},
 		],
 	},
 	reactStrictMode: true,

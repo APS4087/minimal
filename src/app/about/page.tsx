@@ -1,6 +1,8 @@
 import { Content } from "@/ui/components";
 import { Storytelling, Showcase } from "@/ui/components";
-import placeholder from "@/assets/images/placeholder/placeholder.svg";
+import placeholder from "@/assets/images/tempImg.jpg";
+
+const testVideo = "/videos/testVId.mp4";
 
 interface StorytellingItem {
   variant: "portrait" | "landscape";
@@ -20,8 +22,8 @@ const storytellingItems: StorytellingItem[] = [
   },
   {
     variant: "landscape",
-    mediaType: "image",
-    media: placeholder,
+    mediaType: "video",
+    media: testVideo,
     title: "Project Title",
     description: "Project description placeholder.",
   },
@@ -34,8 +36,8 @@ const storytellingItems: StorytellingItem[] = [
   },
   {
     variant: "landscape",
-    mediaType: "image",
-    media: placeholder,
+    mediaType: "video",
+    media: testVideo,
     title: "Project Title",
     description: "Project description placeholder.",
   },

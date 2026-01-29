@@ -51,14 +51,15 @@ export const Storytelling = ({
       return (
         <div
           ref={mediaRef}
-          className="transition-all duration-700 ease-out opacity-0 translate-y-4"
+          className={`transition-all duration-700 ease-out opacity-0 translate-y-4 relative ${
+            variant === "landscape" ? "aspect-video" : "aspect-[4/3]"
+          }`}
         >
           <Image
-            className={`object-cover w-full  ${
-              variant === "landscape" ? "aspect-square" : "aspect-[2/2.5]"
-            }`}
+            className="object-cover"
             src={media}
             alt={title}
+            fill
           />
         </div>
       );
@@ -70,7 +71,7 @@ export const Storytelling = ({
         >
           <video
             className={`object-cover w-full h-full ${
-              variant === "landscape" ? "aspect-square" : "aspect-[2/2.5]"
+              variant === "landscape" ? "aspect-video" : "aspect-[4/3]"
             }`}
             src={media}
             autoPlay

@@ -33,6 +33,23 @@ export const NowPlaying = () => {
     return () => clearInterval(interval);
   }, []);
 
+  const formatTimeAgo = (minutes: number): string => {
+    if (minutes < 1) return "just now";
+    if (minutes < 60) return `${Math.floor(minutes)}m ago`;
+
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+
+    const days = Math.floor(hours / 24);
+    if (days < 7) return `${days}d ago`;
+
+    const weeks = Math.floor(days / 7);
+    if (weeks < 4) return `${weeks}w ago`;
+
+    const months = Math.floor(days / 30);
+    return `${months}mo ago`;
+  };
+
   if (!data || !data.title) {
     return null;
   }
@@ -40,7 +57,7 @@ export const NowPlaying = () => {
   return (
     <div className="flex flex-col gap-8">
       <p className="text-11 uppercase opacity-50">
-        {data.isPlaying ? "Currently listening" : `Last played ${data.minutesAgo}m ago`}
+        {data.isPlaying ? "Currently listening" : `Last played ${formatTimeAgo(data.minutesAgo || 0)}`}
       </p>
       <a
         href={data.songUrl}

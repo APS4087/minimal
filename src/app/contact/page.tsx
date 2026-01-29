@@ -1,6 +1,6 @@
 import { Content } from "@/ui/components";
 import { Showcase } from "@/ui/components/showcase/Showcase";
-import placeholder from "@/assets/images/placeholder/placeholder.svg";
+import placeholder from "@/assets/images/tempImg.jpg";
 
 export default function Contact() {
   return (
