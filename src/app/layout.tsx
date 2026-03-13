@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { courier } from "@/fonts/Courier";
+import { neuemontreal } from "@/fonts/NeueMontreal";
 import "@/style/globals.scss";
 import { LenisWrapper, Grid, GsapScrollTrigger, MenuWrapper } from "@/ui/components";
 
@@ -16,10 +17,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${courier.variable} ${courier.variable} font-serif text-white antialiased bg-black`}
+        className={`${courier.variable} ${neuemontreal.variable} font-serif text-black antialiased bg-white`}
       >
         <MenuWrapper />
-        <main id="content" tabIndex={-1}>
+        <main id="content" tabIndex={-1} className="pt-40">
           {children}
         </main>
         <Grid />
