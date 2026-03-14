@@ -9,12 +9,14 @@ import {
   useTransform,
 } from "framer-motion";
 import { playTick, playClick } from "@/lib/audio";
+import { useTheme } from "@/lib/theme";
 import type { Project } from "@/types/project";
 
 const IMAGE_W = 240;
 const IMAGE_H = Math.round(IMAGE_W * (5 / 4));
 
 export const IndexView = ({ projects, onSelect }: { projects: Project[]; onSelect: (index: number) => void }) => {
+  const { theme } = useTheme();
   const [hovered, setHovered] = useState<number | null>(null);
   const active = hovered !== null ? projects[hovered] : null;
 
@@ -39,8 +41,9 @@ export const IndexView = ({ projects, onSelect }: { projects: Project[]; onSelec
     <div
       className="relative w-full min-h-[calc(100vh-40px)]"
       style={{
-        background:
-          "radial-gradient(ellipse 80% 60% at 15% 85%, #ece8e1 0%, #f5f3ef 35%, #fafaf8 70%, #ffffff 100%)",
+        background: theme === "dark"
+          ? "radial-gradient(ellipse 80% 60% at 15% 85%, #141410 0%, #0f0f0c 35%, #0a0a0a 70%, #050505 100%)"
+          : "radial-gradient(ellipse 80% 60% at 15% 85%, #ece8e1 0%, #f5f3ef 35%, #fafaf8 70%, #ffffff 100%)",
       }}
     >
       {/* Cursor-following preview */}
