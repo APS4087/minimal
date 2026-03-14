@@ -18,6 +18,14 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [wipeBg, setWipeBg] = useState<string | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
   const originRef = useRef({ x: 0, y: 0 });
+  const rafRef = useRef<[number, number]>([0, 0]);
+
+  useEffect(() => {
+    return () => {
+      cancelAnimationFrame(rafRef.current[0]);
+      cancelAnimationFrame(rafRef.current[1]);
+    };
+  }, []);
 
   useEffect(() => {
     const saved = localStorage.getItem("theme") as Theme | null;
@@ -39,13 +47,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
     // Apply new theme via double-RAF so it lands in the same paint
     // frame as the overlay — user never sees an intermediate state
-    requestAnimationFrame(() =>
-      requestAnimationFrame(() => {
+    rafRef.current[0] = requestAnimationFrame(() => {
+      rafRef.current[1] = requestAnimationFrame(() => {
         localStorage.setItem("theme", next);
         document.documentElement.classList.toggle("dark", next === "dark");
         setTheme(next);
-      })
-    );
+      });
+    });
   };
 
   const { x, y } = originRef.current;

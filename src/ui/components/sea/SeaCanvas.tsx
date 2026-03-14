@@ -225,7 +225,7 @@ export function SeaCanvas({ isDark = false }: { isDark?: boolean }) {
     }
   }, [isDark]);
 
-  const bg = isDark ? "#0a0a0a" : "#ffffff";
+  const bg = (isDark ? DARK : LIGHT).bg;
 
   return (
     <div

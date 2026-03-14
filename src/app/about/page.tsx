@@ -7,11 +7,13 @@ import { playTick, playClick } from "@/lib/audio";
 import { useTheme } from "@/lib/theme";
 
 /* ─── animation helpers ─────────────────────────────────── */
+const EASE = [0.16, 1, 0.3, 1];
+
 const fadeUp = (delay = 0) => ({
   initial: { opacity: 0, y: 24 },
   whileInView: { opacity: 1, y: 0 } as object,
   viewport: { once: true, margin: "-60px" },
-  transition: { duration: 0.72, delay, ease: [0.16, 1, 0.3, 1] },
+  transition: { duration: 0.72, delay, ease: EASE },
 });
 
 /* ─── media helper ───────────────────────────────────────── */
@@ -67,7 +69,7 @@ const LINKS = [
 const heroItem = (delay: number) => ({
   initial: { opacity: 0, y: 20 },
   animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.9, delay, ease: [0.16, 1, 0.3, 1] },
+  transition: { duration: 0.9, delay, ease: EASE },
 });
 
 /* ─── page ───────────────────────────────────────────────── */
@@ -242,15 +244,13 @@ export default function About() {
         </div>
 
         {/* Community pull quote */}
-        <div className="border-t border-black/10 dark:border-white/10 px-16 lg:px-24 py-[12vh]">
-          <div className="grid grid-cols-12">
-            <motion.p {...fadeUp()} className="col-start-1 col-end-9 lg:col-start-2 lg:col-end-9 font-sans text-12 leading-relaxed opacity-40">
-              Community is the work. Every hackathon I've organised has taught me more
-              about shipping under pressure, leading through chaos, and what it takes to
-              get a room of strangers to build something worth showing — than any job
-              title ever could.
-            </motion.p>
-          </div>
+        <div className="border-t border-black/10 dark:border-white/10 px-16 lg:px-24 py-[12vh] grid grid-cols-12">
+          <motion.p {...fadeUp()} className="col-start-1 col-end-9 lg:col-start-2 lg:col-end-9 font-sans text-12 leading-relaxed opacity-40">
+            Community is the work. Every hackathon I've organised has taught me more
+            about shipping under pressure, leading through chaos, and what it takes to
+            get a room of strangers to build something worth showing — than any job
+            title ever could.
+          </motion.p>
         </div>
       </section>
 
@@ -307,7 +307,7 @@ export default function About() {
         </AnimatedText>
         <motion.div
           initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 } as object}
-          viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.2, ease: [0.16,1,0.3,1] }}
+          viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.2, ease: EASE }}
           className="flex flex-col gap-12 lg:items-end"
         >
           <span className="font-sans text-9 uppercase tracking-widest opacity-25">Singapore · Open to opportunities</span>

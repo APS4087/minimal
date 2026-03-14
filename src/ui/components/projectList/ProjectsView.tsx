@@ -10,6 +10,11 @@ import { ProjectOverlay } from "./ProjectOverlay";
 
 type View = "spread" | "index";
 
+const VIEWS: { id: View; label: string }[] = [
+  { id: "spread", label: "Spread" },
+  { id: "index",  label: "Index"  },
+];
+
 export const ProjectsView = ({ projects }: { projects: Project[] }) => {
   const [view, setView] = useState<View>("spread");
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
@@ -23,27 +28,21 @@ export const ProjectsView = ({ projects }: { projects: Project[] }) => {
     <div className="relative">
       {/* View toggle — fixed bottom-right */}
       <div className="fixed bottom-20 right-16 lg:right-24 z-50 flex items-center bg-white dark:bg-[#0a0a0a] border border-black/10 dark:border-white/10 overflow-hidden">
-        <button
-          onClick={() => { playClick(); setView("spread"); }}
-          className={`px-12 py-6 font-sans text-9 uppercase tracking-widest transition-all duration-200 ${
-            view === "spread"
-              ? "bg-black dark:bg-white text-white dark:text-black"
-              : "text-black/30 dark:text-white/30 hover:text-black/60 dark:hover:text-white/60"
-          }`}
-        >
-          Spread
-        </button>
-        <div className="w-px bg-black/10 dark:bg-white/10 self-stretch" />
-        <button
-          onClick={() => { playClick(); setView("index"); }}
-          className={`px-12 py-6 font-sans text-9 uppercase tracking-widest transition-all duration-200 ${
-            view === "index"
-              ? "bg-black dark:bg-white text-white dark:text-black"
-              : "text-black/30 dark:text-white/30 hover:text-black/60 dark:hover:text-white/60"
-          }`}
-        >
-          Index
-        </button>
+        {VIEWS.map((v, i) => (
+          <div key={v.id} className="flex items-center">
+            {i > 0 && <div className="w-px bg-black/10 dark:bg-white/10 self-stretch" />}
+            <button
+              onClick={() => { playClick(); setView(v.id); }}
+              className={`px-12 py-6 font-sans text-9 uppercase tracking-widest transition-all duration-200 ${
+                view === v.id
+                  ? "bg-black dark:bg-white text-white dark:text-black"
+                  : "text-black/30 dark:text-white/30 hover:text-black/60 dark:hover:text-white/60"
+              }`}
+            >
+              {v.label}
+            </button>
+          </div>
+        ))}
       </div>
 
       {/* List views */}
