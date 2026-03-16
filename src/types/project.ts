@@ -1,3 +1,8 @@
+export interface GalleryItem {
+  mediaType: 'image' | 'video';
+  url: string;
+}
+
 export interface Project {
   _id: string;
   title: string;
@@ -5,7 +10,7 @@ export interface Project {
   techStack: string[];
   mediaType: string;
   mediaUrl: string;
-  images: string[];
+  gallery: GalleryItem[];
   layout: string;
   link: string;
 }

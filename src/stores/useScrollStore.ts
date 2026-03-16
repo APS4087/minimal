@@ -18,6 +18,7 @@ interface ScrollState {
 	isLocked: boolean,
 	savedScrollY: number,
 	setIsLocked: (value: boolean) => void,
+	setLenis: (lenis: Lenis | undefined) => void,
 	lenis?: Lenis,
 	scrollTo: (value: number, options?: any) => void,
 }
@@ -25,6 +26,7 @@ interface ScrollState {
 export const useScrollStore = createWithEqualityFn<ScrollState>((set, get) => ({
 	isLocked: false,
 	savedScrollY: 0,
+	setLenis: (lenis) => set({ lenis }),
 	setIsLocked: value => {
 		const body = document.body
 		const lenis = get().lenis

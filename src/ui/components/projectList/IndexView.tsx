@@ -35,11 +35,38 @@ export const IndexView = ({ projects, onSelect }: { projects: Project[]; onSelec
     };
     window.addEventListener("mousemove", onMove);
     return () => window.removeEventListener("mousemove", onMove);
-  }, [rawX, rawY]);
+  }, []);
+
+  const half = Math.ceil(projects.length / 2);
+  const topProjects = projects.slice(0, half);
+  const bottomProjects = projects.slice(half);
+
+  const renderRow = (project: Project, globalIndex: number) => {
+    const isActive = hovered === globalIndex;
+    const isDimmed = hovered !== null && !isActive;
+    return (
+      <button
+        key={project._id}
+        onClick={() => { playClick(); onSelect(globalIndex); }}
+        onMouseEnter={() => { playTick(); setHovered(globalIndex); }}
+        onMouseLeave={() => setHovered(null)}
+        className={`w-full flex justify-between items-baseline px-16 lg:px-24 py-[9px] transition-opacity duration-150 text-left ${
+          isDimmed ? "opacity-[0.22]" : "opacity-100"
+        }`}
+      >
+        <span className="font-sans text-13 lg:text-14 leading-none">
+          {project.title}
+        </span>
+        <span className="font-sans text-13 lg:text-14 leading-none text-right opacity-40">
+          {project.techStack[0]}
+        </span>
+      </button>
+    );
+  };
 
   return (
     <div
-      className="relative w-full min-h-[calc(100vh-40px)]"
+      className="relative w-full min-h-[calc(100vh-40px)] flex flex-col"
       style={{
         background: theme === "dark"
           ? "radial-gradient(ellipse 80% 60% at 15% 85%, #141410 0%, #0f0f0c 35%, #0a0a0a 70%, #050505 100%)"
@@ -79,31 +106,14 @@ export const IndexView = ({ projects, onSelect }: { projects: Project[]; onSelec
         )}
       </AnimatePresence>
 
-      {/* Index list — full-width rows */}
-      <div className="w-full pt-48 pb-64">
-        {projects.map((project, i) => {
-          const isActive = hovered === i;
-          const isDimmed = hovered !== null && !isActive;
+      {/* Top half — grows upward from center (flex-col-reverse pushes items to bottom) */}
+      <div className="flex flex-col-reverse flex-1">
+        {topProjects.map((project, i) => renderRow(project, i))}
+      </div>
 
-          return (
-            <button
-              key={project._id}
-              onClick={() => { playClick(); onSelect(i); }}
-              onMouseEnter={() => { playTick(); setHovered(i); }}
-              onMouseLeave={() => setHovered(null)}
-              className={`w-full flex justify-between items-baseline px-16 lg:px-24 py-[9px] transition-opacity duration-150 text-left ${
-                isDimmed ? "opacity-[0.22]" : "opacity-100"
-              }`}
-            >
-              <span className="font-sans text-13 lg:text-14 leading-none">
-                {project.title}
-              </span>
-              <span className="font-sans text-13 lg:text-14 leading-none text-right">
-                {project.techStack[0]}
-              </span>
-            </button>
-          );
-        })}
+      {/* Bottom half — grows downward from center */}
+      <div className="flex flex-col flex-1">
+        {bottomProjects.map((project, i) => renderRow(project, half + i))}
       </div>
     </div>
   );

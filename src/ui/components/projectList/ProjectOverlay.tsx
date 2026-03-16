@@ -18,6 +18,7 @@ interface ProjectOverlayProps {
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 const STRIP_W = 64;
+const noScrollbar = { scrollbarWidth: "none", msOverflowStyle: "none" } as React.CSSProperties;
 
 export const ProjectOverlay = ({
   project,
@@ -27,7 +28,9 @@ export const ProjectOverlay = ({
   onPrev,
   onNext,
 }: ProjectOverlayProps) => {
-  const images = project.images?.length ? project.images : [project.mediaUrl];
+  const gallery = project.gallery?.length
+    ? project.gallery
+    : [{ mediaType: (project.mediaType || "image") as "image" | "video", url: project.mediaUrl }];
   const [activeImg, setActiveImg] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -70,7 +73,7 @@ export const ProjectOverlay = ({
     );
     imgRefs.current.forEach((el) => el && observer.observe(el));
     return () => observer.disconnect();
-  }, [images.length]);
+  }, [gallery.length]);
 
   const isFirstRender = useRef(true);
   useEffect(() => {
@@ -117,8 +120,6 @@ export const ProjectOverlay = ({
     }
   }, []);
 
-  const noScrollbar = { scrollbarWidth: "none", msOverflowStyle: "none" } as React.CSSProperties;
-
   return (
     <motion.div
       className="fixed inset-0 z-[200] bg-black overflow-hidden"
@@ -152,19 +153,30 @@ export const ProjectOverlay = ({
         style={noScrollbar}
       >
 <div ref={contentRef}>
-        {images.map((src, i) => (
+        {gallery.map((item, i) => (
           <div
             key={i}
             ref={(el) => { imgRefs.current[i] = el; }}
             className="relative w-full h-screen"
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={src}
-              alt={`${project.title} ${i + 1}`}
-              className="w-full h-full object-cover"
-              loading={i === 0 ? "eager" : "lazy"}
-            />
+            {item.mediaType === "video" ? (
+              <video
+                src={item.url}
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={item.url}
+                alt={`${project.title} ${i + 1}`}
+                className="w-full h-full object-cover"
+                loading={i === 0 ? "eager" : "lazy"}
+              />
+            )}
           </div>
         ))}
         </div>
@@ -178,14 +190,14 @@ export const ProjectOverlay = ({
 
       {/* ── Bottom bar ───────────────────────────────────── */}
       <motion.div
-        className="absolute bottom-0 left-0 right-0 px-20 lg:px-28 pb-20 pointer-events-none"
+        className="absolute bottom-0 left-0 right-16 px-20 lg:px-28 pb-20 pointer-events-none"
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.48, duration: 0.5, ease: EASE }}
       >
-        {images.length > 1 && (
+        {gallery.length > 1 && (
           <div className="flex gap-6 mb-14 pointer-events-auto">
-            {images.map((_, i) => (
+            {gallery.map((_, i) => (
               <button key={i} onClick={() => scrollToImage(i)} className="py-6 group">
                 <div className={`h-[2px] transition-all duration-300 ${
                   i === activeImg ? "w-28 bg-white" : "w-16 bg-white/30 group-hover:bg-white/55"
@@ -253,7 +265,7 @@ export const ProjectOverlay = ({
           className="flex-1 overflow-y-scroll flex flex-col"
           style={noScrollbar}
         >
-          {images.map((src, i) => (
+          {gallery.map((item, i) => (
             <button
               key={i}
               onClick={() => { playTick(); scrollToImage(i); }}
@@ -261,8 +273,12 @@ export const ProjectOverlay = ({
                 activeImg === i ? "opacity-70" : "opacity-15 hover:opacity-35"
               }`}
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={src} alt="" className="w-full aspect-[3/4] object-cover" loading="lazy" />
+              {item.mediaType === "video" ? (
+                <video src={item.url} muted preload="none" className="w-full aspect-[3/4] object-cover" />
+              ) : (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={item.url} alt="" className="w-full aspect-[3/4] object-cover" loading="lazy" />
+              )}
               {activeImg === i && (
                 <div className="absolute inset-y-0 left-0 w-[2px] bg-white" />
               )}
