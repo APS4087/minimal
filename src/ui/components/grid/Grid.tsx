@@ -37,15 +37,6 @@ export const Grid = () => {
 						)} />
 				))}
 
-				{Array.from({length: 6}).map((_, i) => (
-					<div
-						key={i}
-						className={cx(
-							'lg:hidden span-w-1 h-full bg-red bg-opacity-10',
-							'transition-transform duration-500 ease-in-out origin-top',
-							!isVisible ? 'scale-y-0' : 'scale-y-full',
-						)} />
-				))}
 			</Container>
 		</div>
 	)

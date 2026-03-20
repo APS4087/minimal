@@ -3,10 +3,11 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
+// Each word: the initial letter is always visible, the rest slides in
 const WORDS = [
-  { initial: "A", rest: "UNG" },
-  { initial: "P", rest: "YAE" },
-  { initial: "S", rest: "OE"  },
+  { initial: "A", rest: "UNG",  maxW: 72 },
+  { initial: "P", rest: "YAE",  maxW: 72 },
+  { initial: "S", rest: "OE",   maxW: 52 },
 ];
 
 const SWIFT  = [0.76, 0, 0.24, 1] as const;
@@ -17,13 +18,9 @@ export function Preloader() {
   const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
-    if (sessionStorage.getItem("preloader_shown")) return;
-    sessionStorage.setItem("preloader_shown", "1");
-
     setVisible(true);
-
-    const t1 = setTimeout(() => setExpanded(true), 650);
-    const t2 = setTimeout(() => setVisible(false), 2600);
+    const t1 = setTimeout(() => setExpanded(true),  550);
+    const t2 = setTimeout(() => setVisible(false),  2400);
     return () => { clearTimeout(t1); clearTimeout(t2); };
   }, []);
 
@@ -32,46 +29,56 @@ export function Preloader() {
       {visible && (
         <motion.div
           initial={{ opacity: 1 }}
-          exit={{ opacity: 0, y: -20 }}
-          transition={{ duration: 0.85, ease: SWIFT }}
-          className="fixed inset-0 z-[9999] flex items-center justify-center bg-white dark:bg-[#0a0a0a]"
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.6, ease: SWIFT }}
+          className="fixed inset-0 z-[9999] flex flex-col items-center justify-center gap-5 bg-white dark:bg-[#0a0a0a]"
           aria-hidden
         >
-          {/* Name */}
-          <div className="flex flex-col select-none">
-            {WORDS.map(({ initial, rest }, i) => (
-              <motion.div
-                key={initial}
-                initial={{ opacity: 0, y: 18 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.55, delay: i * 0.07, ease: SPRING }}
-                className="flex items-baseline leading-[0.86]"
-              >
-                {/* Always-visible initial */}
-                <span className="font-serif text-[clamp(52px,8.5vw,108px)] uppercase tracking-tight">
+          {/* Name — all three words in one row */}
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: SPRING }}
+            className="flex items-baseline gap-[0.35em] select-none"
+          >
+            {WORDS.map(({ initial, rest, maxW }, i) => (
+              <div key={initial} className="flex items-baseline leading-none">
+                <span className="font-serif text-[clamp(18px,2vw,26px)] uppercase tracking-tight">
                   {initial}
                 </span>
-
-                {/* Sliding rest of the word */}
                 <motion.span
                   initial={{ maxWidth: 0 }}
-                  animate={{ maxWidth: expanded ? 420 : 0 }}
-                  transition={{ duration: 0.72, delay: i * 0.09, ease: SWIFT }}
+                  animate={{ maxWidth: expanded ? maxW : 0 }}
+                  transition={{ duration: 0.6, delay: i * 0.07, ease: SWIFT }}
                   style={{ display: "inline-block", overflow: "hidden", whiteSpace: "nowrap" }}
-                  className="font-serif text-[clamp(52px,8.5vw,108px)] uppercase tracking-tight"
+                  className="font-serif text-[clamp(18px,2vw,26px)] uppercase tracking-tight"
                 >
                   {rest}
                 </motion.span>
-              </motion.div>
+              </div>
             ))}
-          </div>
+          </motion.div>
 
-          {/* Thin progress line */}
+          {/* Small label + hairlines */}
           <motion.div
-            className="absolute bottom-0 left-0 h-[1px] bg-black dark:bg-white opacity-15"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: expanded ? 1 : 0 }}
+            transition={{ duration: 0.5, delay: 0.35, ease: SPRING }}
+            className="flex items-center gap-10"
+          >
+            <span className="block h-px w-10 bg-black dark:bg-white opacity-20" />
+            <span className="font-sans text-[9px] uppercase tracking-[0.28em] opacity-30">
+              Portfolio
+            </span>
+            <span className="block h-px w-10 bg-black dark:bg-white opacity-20" />
+          </motion.div>
+
+          {/* Bottom progress line */}
+          <motion.div
+            className="absolute bottom-0 left-0 h-px bg-black dark:bg-white opacity-10"
             initial={{ width: "0%" }}
             animate={{ width: "100%" }}
-            transition={{ duration: 2.4, ease: "linear" }}
+            transition={{ duration: 2.2, ease: "linear" }}
           />
         </motion.div>
       )}
