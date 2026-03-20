@@ -2,12 +2,12 @@ import type { Metadata } from "next";
 import { courier } from "@/fonts/Courier";
 import { neuemontreal } from "@/fonts/NeueMontreal";
 import "@/style/globals.scss";
-import { LenisWrapper, Grid, GsapScrollTrigger, MenuWrapper, Preloader } from "@/ui/components";
+import { Preloader } from "@/ui/components";
 import { ThemeProvider } from "@/lib/theme";
 
 export const metadata: Metadata = {
-  title: "Portfolio",
-  description: "Portfolio",
+  title: "Bill — Portfolio",
+  description: "A new portfolio is in the making.",
 };
 
 export default function RootLayout({
@@ -18,7 +18,6 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        {/* Prevent flash of wrong theme on load */}
         <script dangerouslySetInnerHTML={{ __html: `(function(){var t=localStorage.getItem('theme');if(t==='dark')document.documentElement.classList.add('dark');})();` }} />
       </head>
       <body
@@ -26,13 +25,7 @@ export default function RootLayout({
       >
         <ThemeProvider>
           <Preloader />
-          <MenuWrapper />
-          <main id="content" tabIndex={-1} className="pt-40">
-            {children}
-          </main>
-          <Grid />
-          <GsapScrollTrigger />
-          <LenisWrapper />
+          {children}
         </ThemeProvider>
       </body>
     </html>
