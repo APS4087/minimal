@@ -1,8 +1,14 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
 import { ParallaxMedia, AnimatedText } from "@/ui/components";
-import { SeaCanvas } from "@/ui/components/sea/SeaCanvas";
+
+// Lazy-load Three.js — defers the heavy WebGL bundle until after the page shell renders
+const SeaCanvas = dynamic(
+  () => import("@/ui/components/sea/SeaCanvas").then((m) => ({ default: m.SeaCanvas })),
+  { ssr: false, loading: () => <div className="absolute inset-0" /> }
+);
 import { playTick, playClick } from "@/lib/audio";
 import { useTheme } from "@/lib/theme";
 import type { AboutData, AboutEvent, Achievement } from "@/types/about";
@@ -98,29 +104,29 @@ function EventSection({ event, index }: { event: AboutEvent; index: number }) {
   return (
     <>
       {/* Wide image left, copy right */}
-      <div className="grid grid-cols-12 gap-x-6 px-16 lg:px-24 items-start mb-6">
+      <div className="flex flex-col lg:grid lg:grid-cols-12 lg:gap-x-6 px-16 lg:px-24 items-start mb-6">
         {heroSrc && (
-          <ParallaxMedia className="col-start-1 col-end-8 overflow-hidden" distance={80}>
-            <Media item={{ type: "image", src: heroSrc, aspect: "aspect-[4/3]" }} />
+          <ParallaxMedia className="w-full lg:col-start-1 lg:col-end-8 overflow-hidden" distance={80}>
+            <Media item={{ type: "image", src: heroSrc, aspect: "aspect-[16/10] lg:aspect-[4/3]" }} />
           </ParallaxMedia>
         )}
         <motion.div
           {...fadeUp(0.12)}
-          className="col-start-8 col-end-13 flex flex-col gap-14 pt-[10vh] pl-16 lg:pl-24"
+          className="lg:col-start-8 lg:col-end-13 flex flex-col gap-14 pt-10 lg:pt-[10vh] lg:pl-16 xl:pl-24"
         >
-          <span className="font-sans text-9 uppercase tracking-widest opacity-25 tabular-nums">
+          <span className="font-sans text-9 uppercase tracking-widest opacity-25 dark:opacity-40 tabular-nums">
             {event.year}
           </span>
           <h2 className="font-serif text-[clamp(28px,3.5vw,52px)] uppercase leading-[0.88]">
             {event.title}
           </h2>
           {event.role && (
-            <span className="font-sans text-9 uppercase tracking-widest opacity-25">
+            <span className="font-sans text-9 uppercase tracking-widest opacity-25 dark:opacity-40">
               {event.role}
             </span>
           )}
           {event.description && (
-            <p className="font-sans text-11 leading-relaxed opacity-45 max-w-[28ch] mt-4">
+            <p className="font-sans text-11 leading-relaxed opacity-45 dark:opacity-60 max-w-[28ch] mt-4">
               {event.description}
             </p>
           )}
@@ -129,7 +135,7 @@ function EventSection({ event, index }: { event: AboutEvent; index: number }) {
               {stats.map((s) => (
                 <div key={s.label} className="flex flex-col gap-4" onMouseEnter={playTick}>
                   <span className="font-serif text-24 leading-none">{s.value}</span>
-                  <span className="font-sans text-8 uppercase tracking-widest opacity-30">{s.label}</span>
+                  <span className="font-sans text-8 uppercase tracking-widest opacity-30 dark:opacity-45">{s.label}</span>
                 </div>
               ))}
             </div>
@@ -139,19 +145,19 @@ function EventSection({ event, index }: { event: AboutEvent; index: number }) {
 
       {/* Staggered gallery row */}
       {(gallery0 || videoSrc || gallery2) && (
-        <div className="grid grid-cols-12 gap-x-6 px-16 lg:px-24 mb-[14vh]">
+        <div className="grid grid-cols-3 lg:grid-cols-12 gap-x-3 lg:gap-x-6 px-16 lg:px-24 mb-[8vh] lg:mb-[14vh]">
           {gallery0 && (
-            <ParallaxMedia className="col-start-2 col-end-6 overflow-hidden mt-[-4vh]" distance={50}>
+            <ParallaxMedia className="col-span-1 lg:col-start-2 lg:col-end-6 overflow-hidden lg:mt-[-4vh]" distance={50}>
               <Media item={{ type: "image", src: gallery0, aspect: "aspect-[3/4]" }} />
             </ParallaxMedia>
           )}
           {videoSrc && (
-            <ParallaxMedia className="col-start-6 col-end-10 overflow-hidden mt-[5vh]" distance={30}>
-              <Media item={{ type: "video", src: videoSrc, aspect: "aspect-[4/3]" }} />
+            <ParallaxMedia className="col-span-1 lg:col-start-6 lg:col-end-10 overflow-hidden lg:mt-[5vh]" distance={30}>
+              <Media item={{ type: "video", src: videoSrc, aspect: "aspect-[4/3] lg:aspect-[4/3]" }} />
             </ParallaxMedia>
           )}
           {gallery2 && (
-            <ParallaxMedia className="col-start-10 col-end-13 overflow-hidden mt-[14vh]" distance={60}>
+            <ParallaxMedia className="col-span-1 lg:col-start-10 lg:col-end-13 overflow-hidden lg:mt-[14vh]" distance={60}>
               <Media item={{ type: "image", src: gallery2, aspect: "aspect-[3/4]" }} />
             </ParallaxMedia>
           )}
@@ -170,11 +176,16 @@ function AchievementSection({ achievement, index }: { achievement: Achievement; 
     : achievement.title;
 
   if (index % 2 === 0) {
-    // Primary: copy left, media right
+    // Primary: copy left, media right — stacked on mobile
     return (
-      <div className="grid grid-cols-12 gap-x-6 px-16 lg:px-24 items-start mb-[14vh]">
-        <motion.div {...fadeUp()} className="col-start-1 col-end-7 flex flex-col gap-12 pt-[2vh]">
-          <span className="font-sans text-9 uppercase tracking-widest opacity-25 tabular-nums">
+      <div className="flex flex-col lg:grid lg:grid-cols-12 lg:gap-x-6 px-16 lg:px-24 items-start mb-[8vh] lg:mb-[14vh]">
+        {heroSrc && (
+          <div className="w-full lg:hidden mb-8 overflow-hidden">
+            <Media item={{ type: "image", src: heroSrc, aspect: "aspect-[16/10]" }} />
+          </div>
+        )}
+        <motion.div {...fadeUp()} className="lg:col-start-1 lg:col-end-7 flex flex-col gap-12 lg:pt-[2vh]">
+          <span className="font-sans text-9 uppercase tracking-widest opacity-25 dark:opacity-40 tabular-nums">
             {achievement.year}
           </span>
           <h2 className="font-serif text-[clamp(32px,4.5vw,72px)] uppercase leading-[0.88]">
@@ -183,12 +194,12 @@ function AchievementSection({ achievement, index }: { achievement: Achievement; 
             ))}
           </h2>
           {achievement.description && (
-            <p className="font-sans text-11 leading-relaxed opacity-45 max-w-[32ch] mt-8">
+            <p className="font-sans text-11 leading-relaxed opacity-45 dark:opacity-60 max-w-[32ch] mt-8">
               {achievement.description}
             </p>
           )}
         </motion.div>
-        <div className="col-start-7 col-end-13 flex flex-col gap-6">
+        <div className="hidden lg:flex lg:col-start-7 lg:col-end-13 flex-col gap-6">
           {heroSrc && (
             <ParallaxMedia className="overflow-hidden" distance={50}>
               <Media item={{ type: "image", src: heroSrc, aspect: "aspect-[3/2]" }} />
@@ -204,15 +215,15 @@ function AchievementSection({ achievement, index }: { achievement: Achievement; 
     );
   }
 
-  // Secondary: media left, copy right
+  // Secondary: media left, copy right — stacked on mobile
   return (
-    <div className="grid grid-cols-12 gap-x-6 px-16 lg:px-24">
+    <div className="flex flex-col lg:grid lg:grid-cols-12 lg:gap-x-6 px-16 lg:px-24 mb-[8vh] lg:mb-0">
       {heroSrc && (
-        <ParallaxMedia className="col-start-1 col-end-9 overflow-hidden" distance={70}>
-          <Media item={{ type: "image", src: heroSrc, aspect: "aspect-[3/2]" }} />
+        <ParallaxMedia className="w-full lg:col-start-1 lg:col-end-9 overflow-hidden mb-8 lg:mb-0" distance={70}>
+          <Media item={{ type: "image", src: heroSrc, aspect: "aspect-[16/10] lg:aspect-[3/2]" }} />
         </ParallaxMedia>
       )}
-      <motion.div {...fadeUp(0.1)} className="col-start-9 col-end-13 flex flex-col gap-8 pt-[8vh] pl-16 lg:pl-24">
+      <motion.div {...fadeUp(0.1)} className="lg:col-start-9 lg:col-end-13 flex flex-col gap-8 lg:pt-[8vh] lg:pl-16 xl:pl-24">
         <span className="font-sans text-9 uppercase tracking-widest opacity-25 tabular-nums">
           {achievement.year}
         </span>
@@ -222,7 +233,7 @@ function AchievementSection({ achievement, index }: { achievement: Achievement; 
           ))}
         </h2>
         {achievement.description && (
-          <p className="font-sans text-10 leading-relaxed opacity-45 max-w-[22ch] mt-4">
+          <p className="font-sans text-10 leading-relaxed opacity-45 dark:opacity-60 max-w-[22ch] mt-4">
             {achievement.description}
           </p>
         )}
@@ -278,21 +289,21 @@ export function AboutPage({ data }: { data: AboutData | null }) {
             <span className="block text-[clamp(36px,4.5vw,72px)] opacity-50">Aung Pyae Soe</span>
           </motion.h1>
 
-          <div className="flex flex-col gap-24 max-w-[42%]">
+          <div className="flex flex-col gap-24 max-w-full lg:max-w-[42%]">
             <motion.p
               {...heroItem(0.9)}
-              className="font-sans text-12 leading-relaxed opacity-40 max-w-[44ch]"
+              className="font-sans text-12 leading-relaxed opacity-40 dark:opacity-55 max-w-[44ch]"
             >
               {bio}
             </motion.p>
 
             <motion.div {...heroItem(1.1)} className="flex flex-col gap-8">
-              <span className="font-sans text-9 uppercase tracking-widest opacity-20">
+              <span className="font-sans text-9 uppercase tracking-widest opacity-20 dark:opacity-35">
                 Currently
               </span>
               <div className="flex flex-col gap-4">
                 {currentRoles.map((role) => (
-                  <span key={role} className="font-sans text-9 uppercase tracking-widest opacity-40">
+                  <span key={role} className="font-sans text-9 uppercase tracking-widest opacity-40 dark:opacity-55">
                     {role}
                   </span>
                 ))}
@@ -308,7 +319,7 @@ export function AboutPage({ data }: { data: AboutData | null }) {
                   rel="noopener noreferrer"
                   onMouseEnter={playTick}
                   onClick={playClick}
-                  className="font-sans text-9 uppercase tracking-widest opacity-25 hover:opacity-70 transition-opacity duration-200"
+                  className="font-sans text-9 uppercase tracking-widest opacity-25 dark:opacity-40 hover:opacity-70 transition-opacity duration-200"
                 >
                   {label} ↗
                 </a>
@@ -325,12 +336,12 @@ export function AboutPage({ data }: { data: AboutData | null }) {
             key={s.label}
             {...fadeUp(i * 0.07)}
             onMouseEnter={playTick}
-            className="flex flex-col gap-6 cursor-default"
+            className="flex flex-col gap-6 "
           >
             <span className="font-serif text-[clamp(36px,4vw,60px)] leading-none tabular-nums">
               {s.value}
             </span>
-            <span className="font-sans text-9 uppercase tracking-widest opacity-30">
+            <span className="font-sans text-9 uppercase tracking-widest opacity-30 dark:opacity-45">
               {s.label}
             </span>
           </motion.div>
@@ -348,21 +359,31 @@ export function AboutPage({ data }: { data: AboutData | null }) {
       </section>
 
       {/* ── 4. Craft & Stack ─────────────────────────────────── */}
-      <section className="border-t border-black/10 dark:border-white/10 px-16 lg:px-24 py-[10vh] grid grid-cols-12 gap-x-6 items-start">
-        <motion.div
-          {...fadeUp()}
-          className="col-start-1 col-end-4 sticky top-40 flex flex-col gap-10"
-        >
-          <span className="font-sans text-9 uppercase tracking-widest opacity-25">
-            — Craft & Stack
-          </span>
-          <h2 className="font-serif text-[clamp(24px,2.8vw,44px)] uppercase leading-[0.9]">
-            Tools I<br />
-            work with.
+      <section className="border-t border-black/10 dark:border-white/10 px-16 lg:px-24 py-[8vh] lg:py-[10vh]">
+        {/* Mobile header */}
+        <motion.div {...fadeUp()} className="flex flex-col gap-8 mb-16 lg:hidden">
+          <span className="font-sans text-9 uppercase tracking-widest opacity-25 dark:opacity-40">— Craft & Stack</span>
+          <h2 className="font-serif text-[clamp(24px,6vw,44px)] uppercase leading-[0.9]">
+            Tools I work with.
           </h2>
         </motion.div>
 
-        <div className="col-start-5 col-end-13 flex flex-col">
+        <div className="lg:grid lg:grid-cols-12 lg:gap-x-6 lg:items-start">
+          {/* Desktop sticky sidebar */}
+          <motion.div
+            {...fadeUp()}
+            className="hidden lg:flex lg:col-start-1 lg:col-end-4 sticky top-40 flex-col gap-10"
+          >
+            <span className="font-sans text-9 uppercase tracking-widest opacity-25">
+              — Craft & Stack
+            </span>
+            <h2 className="font-serif text-[clamp(24px,2.8vw,44px)] uppercase leading-[0.9]">
+              Tools I<br />
+              work with.
+            </h2>
+          </motion.div>
+
+        <div className="lg:col-start-5 lg:col-end-13 flex flex-col">
           {stackGroups.map((group, gi) => (
             <motion.div
               key={group.area}
@@ -370,17 +391,17 @@ export function AboutPage({ data }: { data: AboutData | null }) {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-40px" }}
               transition={{ duration: 0.6, delay: gi * 0.07, ease: EASE }}
-              className={`border-t py-20 flex flex-col gap-10 ${group.accent ? "border-black/20 mt-16" : "border-black/10 dark:border-white/10"}`}
+              className={`border-t py-16 lg:py-20 flex flex-col gap-10 ${group.accent ? "border-black/20 mt-16" : "border-black/10 dark:border-white/10"}`}
             >
-              <span className={`font-sans text-9 uppercase tracking-widest ${group.accent ? "opacity-50" : "opacity-30"}`}>
+              <span className={`font-sans text-9 uppercase tracking-widest ${group.accent ? "opacity-50 dark:opacity-65" : "opacity-30 dark:opacity-45"}`}>
                 {group.area}
               </span>
-              <div className="flex flex-wrap gap-x-20 gap-y-6">
+              <div className="flex flex-wrap gap-x-16 lg:gap-x-20 gap-y-6">
                 {group.skills.map((skill) => (
                   <span
                     key={skill}
                     onMouseEnter={playTick}
-                    className={`font-serif uppercase leading-none cursor-default ${group.accent ? "text-20 lg:text-26" : "text-16 lg:text-20 opacity-80"}`}
+                    className={`font-serif uppercase leading-none ${group.accent ? "text-18 lg:text-26" : "text-14 lg:text-20 opacity-80"}`}
                   >
                     {skill}
                   </span>
@@ -389,13 +410,14 @@ export function AboutPage({ data }: { data: AboutData | null }) {
             </motion.div>
           ))}
         </div>
+        </div>{/* end lg:grid */}
       </section>
 
       {/* ── 5. Events & Community ────────────────────────────── */}
       <section className="py-[6vh]">
         <motion.span
           {...fadeUp()}
-          className="font-sans text-9 uppercase tracking-widest opacity-25 block px-16 lg:px-24 mb-[8vh]"
+          className="font-sans text-9 uppercase tracking-widest opacity-25 dark:opacity-40 block px-16 lg:px-24 mb-[8vh]"
         >
           — Events & Community
         </motion.span>
@@ -405,10 +427,10 @@ export function AboutPage({ data }: { data: AboutData | null }) {
         ))}
 
         {/* Community pull quote */}
-        <div className="border-t border-black/10 dark:border-white/10 px-16 lg:px-24 py-[12vh] grid grid-cols-12">
+        <div className="border-t border-black/10 dark:border-white/10 px-16 lg:px-24 py-[8vh] lg:py-[12vh]">
           <motion.p
             {...fadeUp()}
-            className="col-start-1 col-end-9 lg:col-start-2 lg:col-end-9 font-sans text-12 leading-relaxed opacity-40"
+            className="font-sans text-12 leading-relaxed opacity-40 dark:opacity-55 max-w-[52ch]"
           >
             {communityQuote}
           </motion.p>
@@ -419,7 +441,7 @@ export function AboutPage({ data }: { data: AboutData | null }) {
       <section className="py-[10vh]">
         <motion.span
           {...fadeUp()}
-          className="font-sans text-9 uppercase tracking-widest opacity-25 block px-16 lg:px-24 mb-[8vh]"
+          className="font-sans text-9 uppercase tracking-widest opacity-25 dark:opacity-40 block px-16 lg:px-24 mb-[8vh]"
         >
           — Recognition
         </motion.span>
@@ -448,7 +470,7 @@ export function AboutPage({ data }: { data: AboutData | null }) {
           transition={{ duration: 0.6, delay: 0.2, ease: EASE }}
           className="flex flex-col gap-12 lg:items-end"
         >
-          <span className="font-sans text-9 uppercase tracking-widest opacity-25">
+          <span className="font-sans text-9 uppercase tracking-widest opacity-25 dark:opacity-40">
             Singapore · Open to opportunities
           </span>
           <div className="flex gap-20">
@@ -460,7 +482,7 @@ export function AboutPage({ data }: { data: AboutData | null }) {
                 rel="noopener noreferrer"
                 onMouseEnter={playTick}
                 onClick={playClick}
-                className="font-sans text-9 uppercase tracking-widest opacity-25 hover:opacity-70 transition-opacity duration-200"
+                className="font-sans text-9 uppercase tracking-widest opacity-25 dark:opacity-40 hover:opacity-70 transition-opacity duration-200"
               >
                 {label} ↗
               </a>

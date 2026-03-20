@@ -230,7 +230,7 @@ export function SeaCanvas({ isDark = false }: { isDark?: boolean }) {
   return (
     <div
       ref={wrapRef}
-      className="relative w-full h-full cursor-crosshair"
+      className="relative w-full h-full"
       onClick={playClick}
     >
       <canvas ref={canvasRef} className="w-full h-full" />

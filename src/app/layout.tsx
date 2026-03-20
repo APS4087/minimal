@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { courier } from "@/fonts/Courier";
 import { neuemontreal } from "@/fonts/NeueMontreal";
 import "@/style/globals.scss";
-import { LenisWrapper, Grid, GsapScrollTrigger, MenuWrapper } from "@/ui/components";
+import { LenisWrapper, Grid, GsapScrollTrigger, MenuWrapper, Preloader } from "@/ui/components";
 import { ThemeProvider } from "@/lib/theme";
 
 export const metadata: Metadata = {
@@ -25,6 +25,7 @@ export default function RootLayout({
         className={`${courier.variable} ${neuemontreal.variable} font-serif text-black dark:text-white antialiased bg-white dark:bg-[#0a0a0a]`}
       >
         <ThemeProvider>
+          <Preloader />
           <MenuWrapper />
           <main id="content" tabIndex={-1} className="pt-40">
             {children}

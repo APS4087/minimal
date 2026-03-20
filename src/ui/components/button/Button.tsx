@@ -21,7 +21,7 @@ const shared = [
 
 export const buttonStyles = tv({
   base: [
-    "appearance-none cursor-pointer font-serif overflow-clip",
+    "appearance-none font-serif overflow-clip",
     "disabled:pointer-events-none",
     // styles when using tab key to focus
     "focus-visible:outline",

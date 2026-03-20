@@ -107,3 +107,86 @@ export function playPage() {
   if (!c) return;
   tone(c, 261.6, 0.12, 0.28, 0.008, 0.42); // C4 — clean, resolved
 }
+
+// Star hover — FM synthesis + stellar noise. Each cluster index = distinct cosmic voice.
+// No musical scale — these are sub-bass "stellar frequencies" that feel massive + distant.
+export function playStarHover(index: number) {
+  const c = getCtx();
+  if (!c) return;
+  const t = c.currentTime;
+
+  // 10 sub-bass carrier frequencies (not musical — cosmic, low, vast)
+  const STELLAR = [38.9, 43.7, 48.1, 51.9, 58.3, 65.4, 73.4, 82.4, 87.3, 97.9];
+  const cf = STELLAR[index % STELLAR.length];
+
+  // ── FM synthesis: inharmonic ratio → metallic / cosmic bell texture ──
+  const mod = c.createOscillator();
+  const modGain = c.createGain();
+  const car = c.createOscillator();
+
+  mod.type = "sine";
+  mod.frequency.value = cf * 3.5; // non-integer ratio = inharmonic = not musical
+
+  // Modulation index decays slowly — starts brash, settles to pure tone
+  modGain.gain.setValueAtTime(0, t);
+  modGain.gain.linearRampToValueAtTime(cf * 5, t + 0.25);
+  modGain.gain.exponentialRampToValueAtTime(cf * 0.3, t + 2.4);
+
+  car.type = "sine";
+  car.frequency.value = cf;
+
+  const wetGain = c.createGain();
+  wetGain.gain.setValueAtTime(0, t);
+  wetGain.gain.linearRampToValueAtTime(0.08, t + 0.3);
+  wetGain.gain.exponentialRampToValueAtTime(0.001, t + 4.0);
+
+  const dryGain = c.createGain();
+  dryGain.gain.setValueAtTime(0, t);
+  dryGain.gain.linearRampToValueAtTime(0.022, t + 0.3);
+  dryGain.gain.exponentialRampToValueAtTime(0.001, t + 2.8);
+
+  mod.connect(modGain);
+  modGain.connect(car.frequency); // FM: modulator drives carrier pitch
+  car.connect(wetGain); wetGain.connect(getReverb(c));
+  car.connect(dryGain); dryGain.connect(getMaster(c));
+
+  mod.start(t); mod.stop(t + 4.1);
+  car.start(t); car.stop(t + 4.1);
+  car.onended = () => {
+    mod.disconnect(); modGain.disconnect();
+    car.disconnect(); wetGain.disconnect(); dryGain.disconnect();
+  };
+
+  // ── Stellar static: filtered noise burst — like cosmic radiation ──
+  const bufLen = Math.floor(c.sampleRate * 0.9);
+  const buf = c.createBuffer(1, bufLen, c.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < bufLen; i++) data[i] = Math.random() * 2 - 1;
+
+  const noise = c.createBufferSource();
+  noise.buffer = buf;
+
+  const bpf = c.createBiquadFilter();
+  bpf.type = "bandpass";
+  bpf.frequency.value = 900 + index * 120; // each cluster has a different "frequency band"
+  bpf.Q.value = 5;
+
+  const nGain = c.createGain();
+  nGain.gain.setValueAtTime(0.022, t);
+  nGain.gain.exponentialRampToValueAtTime(0.001, t + 0.75);
+
+  noise.connect(bpf); bpf.connect(nGain); nGain.connect(getReverb(c));
+  noise.start(t); noise.stop(t + 0.9);
+  noise.onended = () => { noise.disconnect(); bpf.disconnect(); nGain.disconnect(); };
+}
+
+// Deep space warp — fly into a cluster
+// Low foundation swell with rising harmonics, like entering hyperspace
+export function playFlyIn() {
+  const c = getCtx();
+  if (!c) return;
+  tone(c, 55.0,  0.20, 0.42, 1.1, 2.2);        // A1 — deep rumble
+  tone(c, 82.4,  0.11, 0.24, 0.9, 1.8, 0.15);  // E2 — mid harmonic
+  tone(c, 110.0, 0.07, 0.16, 0.7, 1.4, 0.3);   // A2
+  tone(c, 164.8, 0.03, 0.09, 0.5, 1.0, 0.5);   // E3 — airy top arrives last
+}

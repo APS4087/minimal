@@ -3,11 +3,13 @@ import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "@/lib/theme";
+import { RollingText } from "@/ui/components/rollingText/RollingText";
 
 const NAV_LINKS = [
   { href: "/", label: "Work" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
+  { href: "/playground", label: "Playground" },
 ];
 
 export const Menu = () => {
@@ -31,10 +33,10 @@ export const Menu = () => {
             key={href}
             href={href}
             className={`transition-opacity duration-200 ${
-              isActive(href) ? "opacity-100" : "opacity-30 hover:opacity-70"
+              isActive(href) ? "opacity-100" : "opacity-30 dark:opacity-50 hover:opacity-70"
             }`}
           >
-            {label}
+            <RollingText>{label}</RollingText>
           </Link>
         ))}
         <button
@@ -43,7 +45,7 @@ export const Menu = () => {
             toggle(rect.left + rect.width / 2, rect.top + rect.height / 2);
           }}
           aria-label="Toggle theme"
-          className="opacity-30 hover:opacity-70 transition-opacity duration-200 cursor-pointer"
+          className="opacity-30 dark:opacity-50 hover:opacity-70 transition-opacity duration-200"
         >
           {theme === "light" ? "○" : "●"}
         </button>
