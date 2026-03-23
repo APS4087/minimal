@@ -28,6 +28,29 @@ function makeParticleTexture(): THREE.CanvasTexture {
   return new THREE.CanvasTexture(c);
 }
 
+function makeNebulaTexture(r: number, g: number, b: number): THREE.CanvasTexture {
+  const size = 256;
+  const c = document.createElement("canvas");
+  c.width = c.height = size;
+  const ctx = c.getContext("2d")!;
+  const half = size / 2;
+  const main = ctx.createRadialGradient(half, half, 0, half, half, half);
+  main.addColorStop(0,    `rgba(${r},${g},${b},0.38)`);
+  main.addColorStop(0.38, `rgba(${r},${g},${b},0.14)`);
+  main.addColorStop(0.70, `rgba(${r},${g},${b},0.04)`);
+  main.addColorStop(1,    `rgba(${r},${g},${b},0)`);
+  ctx.fillStyle = main;
+  ctx.fillRect(0, 0, size, size);
+  for (const [ox, oy, sr] of [[0.3,0.25,0.32],[0.72,0.38,0.26],[0.45,0.72,0.30],[0.2,0.65,0.20]]) {
+    const bg = ctx.createRadialGradient(ox*size, oy*size, 0, ox*size, oy*size, sr*size);
+    bg.addColorStop(0, `rgba(${r},${g},${b},0.18)`);
+    bg.addColorStop(1, `rgba(${r},${g},${b},0)`);
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, size, size);
+  }
+  return new THREE.CanvasTexture(c);
+}
+
 // Warm galaxy-core glow — stacked as multiple sprites for a bloom effect
 function makeCoreTexture(): THREE.CanvasTexture {
   const size = 256;
@@ -205,6 +228,28 @@ export function GithubUniverse({ commits }: { commits: CommitData[] }) {
     scene.add(coreSpriteMat(6,  0.40));
     scene.add(coreSpriteMat(2,  0.75));
 
+    /* ── Nebula clouds ──────────────────────────────────────── */
+    const nebulaDefs = [
+      { r: 80,  g: 60,  b: 200, x: -18, y:  6, z: -12, s: 48, o: 0.22 },
+      { r: 200, g: 90,  b: 40,  x:  16, y: -4, z: -18, s: 40, o: 0.18 },
+      { r: 40,  g: 160, b: 210, x:  20, y:  8, z:   8, s: 36, o: 0.16 },
+      { r: 170, g: 50,  b: 130, x: -12, y: -6, z:  14, s: 44, o: 0.14 },
+      { r: 60,  g: 100, b: 180, x:   2, y: 14, z: -20, s: 52, o: 0.12 },
+    ];
+    const nebulaMats: THREE.SpriteMaterial[] = [];
+    for (const d of nebulaDefs) {
+      const tex = makeNebulaTexture(d.r, d.g, d.b);
+      const mat = new THREE.SpriteMaterial({
+        map: tex, blending: THREE.AdditiveBlending,
+        transparent: true, opacity: d.o, depthWrite: false,
+      });
+      nebulaMats.push(mat);
+      const sprite = new THREE.Sprite(mat);
+      sprite.scale.set(d.s, d.s, 1);
+      sprite.position.set(d.x, d.y, d.z);
+      scene.add(sprite);
+    }
+
     /* ── Highlight mesh (single pulsing point at hovered/selected) */
     const hlGeo = new THREE.BufferGeometry();
     hlGeo.setAttribute("position", new THREE.BufferAttribute(new Float32Array([0, -9999, 0]), 3));
@@ -331,6 +376,7 @@ export function GithubUniverse({ commits }: { commits: CommitData[] }) {
       bgGeo.dispose();    bgMat.dispose();
       hlGeo.dispose();    hlMat.dispose();
       texture.dispose();  coreTex.dispose();
+      nebulaMats.forEach(m => { m.map?.dispose(); m.dispose(); });
       renderer.dispose();
       controls.dispose();
     };
