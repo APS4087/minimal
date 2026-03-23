@@ -72,9 +72,10 @@ export function GithubUniverse({ commits }: { commits: CommitData[] }) {
     const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 200);
     camera.position.set(0, 12, 30);
 
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+    const isMobile = window.innerWidth < 768;
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: !isMobile });
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1 : 1.5));
     renderer.setClearColor(0x0a0a0a, 1);
 
     const controls = new OrbitControls(camera, canvas);
@@ -162,7 +163,7 @@ export function GithubUniverse({ commits }: { commits: CommitData[] }) {
     scene.add(points);
 
     /* ── Background stars for depth (not interactive) ───────── */
-    const bgCount = 1800;
+    const bgCount = isMobile ? 600 : 1800;
     const bgPos   = new Float32Array(bgCount * 3);
     for (let i = 0; i < bgCount; i++) {
       const theta = Math.random() * Math.PI * 2;
@@ -300,22 +301,27 @@ export function GithubUniverse({ commits }: { commits: CommitData[] }) {
     window.addEventListener("keydown",   onKeyDown);
     window.addEventListener("resize",    onResize);
 
-    /* ── Render loop ────────────────────────────────────────── */
+    /* ── Render loop — pauses when tab hidden ───────────────── */
     let rafId: number;
+    let paused = false;
+    const onVisibility = () => { paused = document.hidden; };
+    document.addEventListener("visibilitychange", onVisibility);
+
     const tick = () => {
-      // Pulse the highlight when something is selected
+      rafId = requestAnimationFrame(tick);
+      if (paused) return;
       if (currentSelected >= 0) {
         hlMat.opacity = 0.65 + Math.sin(Date.now() * 0.0025) * 0.35;
       }
       controls.update();
       renderer.render(scene, camera);
-      rafId = requestAnimationFrame(tick);
     };
     tick();
 
     /* ── Cleanup ────────────────────────────────────────────── */
     return () => {
       cancelAnimationFrame(rafId);
+      document.removeEventListener("visibilitychange", onVisibility);
       window.removeEventListener("mousemove", onMouseMove);
       canvas.removeEventListener("mousedown", onMouseDown);
       canvas.removeEventListener("mouseup",   onMouseUp);

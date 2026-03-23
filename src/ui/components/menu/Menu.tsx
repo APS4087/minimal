@@ -8,7 +8,6 @@ import { RollingText } from "@/ui/components/rollingText/RollingText";
 const NAV_LINKS = [
   { href: "/", label: "Work" },
   { href: "/about", label: "About" },
-  { href: "/contact", label: "Contact" },
   { href: "/playground", label: "Playground" },
 ];
 

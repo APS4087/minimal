@@ -1,7 +1,8 @@
 "use client";
 
+import { useEffect, useRef, useState, useCallback } from "react";
 import dynamic from "next/dynamic";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { ParallaxMedia, AnimatedText } from "@/ui/components";
 
 // Lazy-load Three.js — defers the heavy WebGL bundle until after the page shell renders
@@ -81,11 +82,36 @@ const PH = {
   ach1Hero: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1400&h=900&fit=crop&q=80",
 };
 
+const EMAIL = "hello@example.com";
+
 const LINKS = [
-  { label: "Email", href: "mailto:hello@example.com" },
   { label: "LinkedIn", href: "https://www.linkedin.com/in/aungps" },
-  { label: "GitHub", href: "https://github.com/APS4087" },
+  { label: "GitHub",   href: "https://github.com/APS4087" },
 ];
+
+/* ── contact / scramble helpers ─────────────────────────── */
+const CHARS       = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@._-";
+const SCRAMBLE_MS = 38;
+const RESOLVE_MS  = 58;
+
+function randChar() {
+  return CHARS[Math.floor(Math.random() * CHARS.length)];
+}
+
+function useLocalTime(timezone: string) {
+  const [time, setTime] = useState<string | null>(null);
+  useEffect(() => {
+    const fmt = () =>
+      new Date().toLocaleTimeString("en-US", {
+        timeZone: timezone, hour: "2-digit", minute: "2-digit",
+        second: "2-digit", hour12: true,
+      });
+    setTime(fmt());
+    const id = setInterval(() => setTime(fmt()), 1000);
+    return () => clearInterval(id);
+  }, [timezone]);
+  return time;
+}
 
 const heroItem = (delay: number) => ({
   initial: { opacity: 0, y: 20 },
@@ -246,6 +272,44 @@ function AchievementSection({ achievement, index }: { achievement: Achievement; 
 export function AboutPage({ data }: { data: AboutData | null }) {
   const { theme } = useTheme();
   const isDark = theme === "dark";
+
+  /* ── contact scramble state ────────────────────────────── */
+  const [displayed,  setDisplayed]  = useState<string[]>(() => EMAIL.split(""));
+  const [resolved,   setResolved]   = useState(0);
+  const [copied,     setCopied]     = useState(false);
+  const resolvedRef  = useRef(0);
+  const time = useLocalTime("Asia/Singapore");
+
+  useEffect(() => {
+    let frameId:   ReturnType<typeof setTimeout>;
+    let resolveId: ReturnType<typeof setTimeout>;
+    let stopped = false;
+    const scramble = () => {
+      if (stopped) return;
+      setDisplayed(prev => prev.map((_, i) => i < resolvedRef.current ? EMAIL[i] : randChar()));
+      frameId = setTimeout(scramble, SCRAMBLE_MS);
+    };
+    const resolveNext = () => {
+      if (stopped || resolvedRef.current >= EMAIL.length) return;
+      resolvedRef.current++;
+      setResolved(resolvedRef.current);
+      playTick();
+      if (resolvedRef.current < EMAIL.length) resolveId = setTimeout(resolveNext, RESOLVE_MS);
+      else clearTimeout(frameId);
+    };
+    // Start only when section scrolls near (300ms delay)
+    const startId = setTimeout(() => { scramble(); setTimeout(resolveNext, 420); }, 300);
+    return () => { stopped = true; clearTimeout(startId); clearTimeout(frameId); clearTimeout(resolveId); };
+  }, []);
+
+  const handleCopy = useCallback(async () => {
+    if (copied) return;
+    try { await navigator.clipboard.writeText(EMAIL); }
+    catch { window.location.href = `mailto:${EMAIL}`; return; }
+    playClick();
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2200);
+  }, [copied]);
 
   const bio = data?.bio ?? FALLBACK_BIO;
   const currentRoles = data?.currentRoles ?? FALLBACK_ROLES;
@@ -455,25 +519,79 @@ export function AboutPage({ data }: { data: AboutData | null }) {
         ))}
       </section>
 
-      {/* ── 7. Closing ───────────────────────────────────────── */}
-      <section className="border-t border-black/10 dark:border-white/10 px-16 lg:px-24 py-[12vh] flex flex-col lg:flex-row lg:justify-between lg:items-end gap-32">
-        <AnimatedText
-          as="p"
-          className="font-serif text-[clamp(36px,5vw,80px)] uppercase leading-[0.88] tracking-tight max-w-[18ch]"
-        >
-          {closingTagline}
-        </AnimatedText>
+      {/* ── 7. Contact ───────────────────────────────────────── */}
+      <section className="border-t border-black/10 dark:border-white/10 px-16 lg:px-24 pt-[10vh] pb-[14vh] flex flex-col gap-16">
+
+        {/* Top row: label + availability */}
         <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 } as object}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.2, ease: EASE }}
-          className="flex flex-col gap-12 lg:items-end"
+          {...fadeUp()}
+          className="flex flex-col gap-10 lg:flex-row lg:items-center lg:justify-between"
         >
           <span className="font-sans text-9 uppercase tracking-widest opacity-25 dark:opacity-40">
-            Singapore · Open to opportunities
+            — Get in touch
           </span>
-          <div className="flex gap-20">
+          <div className="flex items-center gap-8">
+            <span className="relative flex h-[6px] w-[6px] shrink-0">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-current opacity-30" />
+              <span className="relative inline-flex h-[6px] w-[6px] rounded-full bg-current opacity-60" />
+            </span>
+            <span className="font-sans text-10 uppercase tracking-widest opacity-40 dark:opacity-55">
+              Available for projects
+            </span>
+          </div>
+        </motion.div>
+
+        {/* Scrambling email */}
+        <motion.button
+          {...fadeUp(0.1)}
+          onClick={handleCopy}
+          onMouseEnter={() => !copied && playTick()}
+          className="group text-left focus:outline-none"
+          aria-label={`Copy email address: ${EMAIL}`}
+        >
+          <p
+            className="font-serif uppercase leading-none tracking-tight"
+            style={{ fontSize: "clamp(28px, 6.5vw, 88px)" }}
+          >
+            {displayed.map((char, i) => (
+              <span
+                key={i}
+                className={`inline-block transition-opacity duration-75 ${
+                  i < resolved ? "opacity-100" : "opacity-35 dark:opacity-55"
+                }`}
+              >
+                {char === " " ? "\u00A0" : char}
+              </span>
+            ))}
+          </p>
+          <div className="mt-10 h-[14px] relative">
+            <span className={`absolute inset-0 font-sans text-10 uppercase tracking-widest transition-opacity duration-200 ${
+              copied ? "opacity-0" : "opacity-0 group-hover:opacity-30 dark:group-hover:opacity-45"
+            }`}>
+              Click to copy
+            </span>
+            <AnimatePresence>
+              {copied && (
+                <motion.span
+                  className="absolute inset-0 font-sans text-10 uppercase tracking-widest opacity-55"
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 0.55, y: 0 }}
+                  exit={{ opacity: 0, y: -5 }}
+                  transition={{ duration: 0.22 }}
+                >
+                  Copied ✓
+                </motion.span>
+              )}
+            </AnimatePresence>
+          </div>
+        </motion.button>
+
+        {/* Bottom bar: socials + time */}
+        <motion.div
+          {...fadeUp(0.2)}
+          className="flex flex-col gap-14 lg:flex-row lg:items-center lg:justify-between border-t border-black/8 dark:border-white/8 pt-16"
+        >
+          <div className="flex items-center gap-20">
             {LINKS.map(({ label, href }) => (
               <a
                 key={label}
@@ -481,13 +599,17 @@ export function AboutPage({ data }: { data: AboutData | null }) {
                 target="_blank"
                 rel="noopener noreferrer"
                 onMouseEnter={playTick}
-                onClick={playClick}
-                className="font-sans text-9 uppercase tracking-widest opacity-25 dark:opacity-40 hover:opacity-70 transition-opacity duration-200"
+                className="font-sans text-10 uppercase tracking-widest opacity-30 dark:opacity-45 hover:opacity-80 transition-opacity duration-200"
               >
                 {label} ↗
               </a>
             ))}
           </div>
+          {time && (
+            <span className="font-sans text-10 uppercase tracking-widest opacity-30 dark:opacity-45 tabular-nums">
+              Singapore · {time}
+            </span>
+          )}
         </motion.div>
       </section>
     </div>

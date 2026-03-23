@@ -123,7 +123,7 @@ void main(){
 }
 `;
 
-const LIGHT = { bg: "#f8f8f8", depth: "#0a0a0a", surface: "#c8c8c8" };
+const LIGHT = { bg: "#ffffff", depth: "#0a0a0a", surface: "#c8c8c8" };
 const DARK  = { bg: "#0a0a0a", depth: "#0a0a0a", surface: "#d4d4d4" };
 
 // ─── Main component ───────────────────────────────────────────────────────────
@@ -131,6 +131,7 @@ export function SeaCanvas({ isDark = false }: { isDark?: boolean }) {
   const wrapRef     = useRef<HTMLDivElement>(null);
   const canvasRef   = useRef<HTMLCanvasElement>(null);
   const rafRef      = useRef(0);
+  const pausedRef   = useRef(false);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const sceneRef    = useRef<THREE.Scene | null>(null);
   const materialRef = useRef<THREE.ShaderMaterial | null>(null);
@@ -141,9 +142,13 @@ export function SeaCanvas({ isDark = false }: { isDark?: boolean }) {
     if (!wrap || !canvas) return;
 
     // ── Setup ──────────────────────────────────────────────────────────────
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+    const isMobile = window.innerWidth < 768;
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: !isMobile });
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1 : 2));
+    // Three.js sets touch-action:none on the canvas which blocks native scroll.
+    // Allow vertical pan so the page scrolls normally on mobile.
+    canvas.style.touchAction = "pan-y";
     rendererRef.current = renderer;
 
     const scene  = new THREE.Scene();
@@ -156,7 +161,9 @@ export function SeaCanvas({ isDark = false }: { isDark?: boolean }) {
     const palette = isDark ? DARK : LIGHT;
     scene.background = new THREE.Color(palette.bg);
 
-    const geometry = new THREE.PlaneGeometry(4, 4, 256, 256);
+    // Fewer vertices on mobile — still looks great, far cheaper to render
+    const segs = isMobile ? 64 : 128;
+    const geometry = new THREE.PlaneGeometry(4, 4, segs, segs);
     const material = new THREE.ShaderMaterial({
       vertexShader: VERT,
       fragmentShader: FRAG,
@@ -193,19 +200,33 @@ export function SeaCanvas({ isDark = false }: { isDark?: boolean }) {
     const ro = new ResizeObserver(resize);
     ro.observe(wrap);
 
-    // ── Animate ────────────────────────────────────────────────────────────
+    // ── Animate — pauses when off-screen or tab hidden ─────────────────────
     const clock = new THREE.Clock();
     const tick  = () => {
+      rafRef.current = requestAnimationFrame(tick);
+      if (pausedRef.current) return;
       material.uniforms.uTime.value = clock.getElapsedTime();
       renderer.render(scene, camera);
-      rafRef.current = requestAnimationFrame(tick);
     };
     tick();
+
+    // Pause when tab is hidden
+    const onVisibility = () => { pausedRef.current = document.hidden; };
+    document.addEventListener("visibilitychange", onVisibility);
+
+    // Pause when scrolled out of view
+    const io = new IntersectionObserver(
+      ([entry]) => { pausedRef.current = !entry.isIntersecting; },
+      { threshold: 0 }
+    );
+    io.observe(wrap);
 
     // ── Cleanup ────────────────────────────────────────────────────────────
     return () => {
       cancelAnimationFrame(rafRef.current);
       ro.disconnect();
+      io.disconnect();
+      document.removeEventListener("visibilitychange", onVisibility);
       geometry.dispose();
       material.dispose();
       renderer.dispose();
